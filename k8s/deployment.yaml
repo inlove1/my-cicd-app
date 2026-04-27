@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: my-cicd-app
-        image: YOUR_DOCKERHUB_USERNAME/my-cicd-app:latest
+        image: hesue/my-cicd-app:latest
         ports:
         - containerPort: 5000
         env:
