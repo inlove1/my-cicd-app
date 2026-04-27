@@ -1,0 +1,51 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  IMAGE_NAME: my-cicd-app
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: 소스코드 체크아웃
+      uses: actions/checkout@v4
+    - name: Python 환경 설정
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: 패키지 설치 및 테스트
+      run: |
+        pip install -r requirements.txt
+        python -c "from app import app; print('앱 임포트 성공')"
+
+  docker-build-push:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+    - uses: actions/checkout@v4
+    - name: DockerHub 로그인
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: 메타데이터 설정
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=raw,value=latest
+          type=sha,prefix=sha-
+    - name: Docker 빌드 & Push
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
