@@ -15,7 +15,7 @@ spec:
       containers:
       - name: my-cicd-app
         image: hesue/my-cicd-app:latest
-	imagePullPolicy: Always
+        imagePullPolicy: Always
         ports:
         - containerPort: 5000
         env:
